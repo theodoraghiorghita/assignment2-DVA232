@@ -1,6 +1,9 @@
 import 'package:assignment2/currency_selector_page.dart';
 import 'package:flutter/material.dart';
 import 'rates_page.dart';
+import '../services/api_service.dart';
+import '../models/currency.dart';
+import '../services/location_service.dart';
 
 const Map<String, double> exchangeRates = {
   'EUR': 1.0,
