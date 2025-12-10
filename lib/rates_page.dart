@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
+import '../models/currency.dart';
 import 'home_page.dart';
 
 class RatesPage extends StatefulWidget {
-  const RatesPage({super.key});
+  final Currency currencyData;
+
+  const RatesPage({super.key, required this.currencyData});
 
   @override
   _RatesPageState createState() => _RatesPageState();
 }
 
 class _RatesPageState extends State<RatesPage> {
-  String exchangecurrency = currencies[1];
+  late String exchangecurrency;
+
+  @override
+  void initState() {
+    super.initState();
+    exchangecurrency = widget.currencyData.rates.keys.first;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final currencies = widget.currencyData.rates.keys.toList();
+    final exchangeRates = widget.currencyData.rates;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D), // matte black
+      backgroundColor: const Color(0xFF0D0D0D),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
@@ -68,25 +80,22 @@ class _RatesPageState extends State<RatesPage> {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  setState(() {
-                    exchangecurrency = value!;
-                  });
+                  setState(() => exchangecurrency = value!);
                 },
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // Rates list
+            // Rates List
             Expanded(
               child: ListView.builder(
-                itemCount: exchangeRates.length,
+                itemCount: currencies.length,
                 itemBuilder: (context, index) {
-                  String currency = exchangeRates.keys.elementAt(index);
-
-                  double baseRate = exchangeRates[exchangecurrency]!;
-                  double targetRate = exchangeRates[currency]!;
-                  double converted = targetRate / baseRate;
+                  final currency = currencies[index];
+                  final baseRate = exchangeRates[exchangecurrency]!;
+                  final targetRate = exchangeRates[currency]!;
+                  final converted = targetRate / baseRate;
 
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 6),

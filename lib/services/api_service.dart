@@ -1,26 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '/models/currency.dart';
+import '../models/currency.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://data.fixer.io/api/';
-  static const String apiKey = 'c898652d82183843dfc9b62a1d7a9356';
+  static const String apiUrl = "https://api.exchangerate.host/latest";
 
-  static Future<Currency?> fetchCurrency(String fromCurrency) async {
-    try {
-      final url = Uri.parse('$baseUrl/latest?access_key=$apiKey');
+  /// Fetch live rates and convert to Currency model
+  static Future<Currency> fetchCurrency() async {
+    final response = await http.get(Uri.parse(apiUrl));
 
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        return Currency.fromJson(json.decode(response.body));
-      } else {
-        print('Failed to load currency data: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching currency data: $e');
-      return null;
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      return Currency.fromJson(jsonData);
+    } else {
+      throw Exception("Failed to fetch currency data");
     }
   }
 }
