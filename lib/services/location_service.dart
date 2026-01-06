@@ -5,14 +5,8 @@ import '../models/currency.dart';
 import '../data/country_currency.dart';
 
 class LocationService {
-  // ---------------------------
-  // Stream subscription for location updates
-  // ---------------------------
   static StreamSubscription<Position>? _positionSubscription;
 
-  // ---------------------------
-  // Get current device position safely
-  // ---------------------------
   static Future<Position?> determinePosition() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -41,9 +35,7 @@ class LocationService {
     }
   }
 
-  // ---------------------------
   // Get country code from position
-  // ---------------------------
   static Future<String?> getCountryCode(Position position) async {
     try {
       final placemarks = await placemarkFromCoordinates(
@@ -56,9 +48,6 @@ class LocationService {
     return null;
   }
 
-  // ---------------------------
-  // Detect currency dynamically using Fixer.io rates
-  // ---------------------------
   static String mapCountryToCurrency(
     String countryCode,
     Currency currencyData,
@@ -67,12 +56,11 @@ class LocationService {
     if (currency != null && currencyData.rates.containsKey(currency)) {
       return currency;
     }
-    return "EUR"; // fallback
+    return "EUR";
   }
 
-  // ---------------------------
   // Get currency code from location
-  // ---------------------------
+
   static Future<String> getCurrencyFromLocation(Currency currencyData) async {
     final position = await determinePosition();
     if (position == null) return "EUR";
@@ -83,9 +71,6 @@ class LocationService {
     return mapCountryToCurrency(countryCode, currencyData);
   }
 
-  // ---------------------------
-  // Start listening to location changes and automatically update currency
-  // ---------------------------
   static void startCurrencyListener({
     required Currency currencyData,
     required void Function(String currency) onCurrencyChanged,
@@ -102,6 +87,7 @@ class LocationService {
         permission == LocationPermission.deniedForever) {
       return;
     }
+    String? lastCountryCode;
 
     _positionSubscription =
         Geolocator.getPositionStream(
@@ -111,16 +97,20 @@ class LocationService {
           ),
         ).listen((position) async {
           final countryCode = await getCountryCode(position);
+
           if (countryCode == null) return;
 
+          if (countryCode == lastCountryCode) {
+            return;
+          }
+
+          lastCountryCode = countryCode;
           final currency = mapCountryToCurrency(countryCode, currencyData);
+
           onCurrencyChanged(currency);
         });
   }
 
-  // ---------------------------
-  // Stop listening to location
-  // ---------------------------
   static void stopCurrencyListener() {
     _positionSubscription?.cancel();
     _positionSubscription = null;

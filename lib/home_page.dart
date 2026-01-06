@@ -5,7 +5,6 @@ import 'rates_page.dart';
 import '../services/api_service.dart';
 import '../models/currency.dart';
 import '../services/location_service.dart';
-import 'utils/currency_utils.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,9 +20,10 @@ class _HomePageState extends State<HomePage> {
   double amount = 1.0;
   double convertedAmount = 1.0;
 
-  bool autoCurrencyEnabled = true;
+  bool autoCurrencyEnabled = true; // listens to location changes
 
   double get unitRate {
+    // exchange rate computation
     if (currencyData == null || fromCurrency == null || toCurrency == null) {
       return 0.0;
     }
@@ -40,13 +40,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _initApp() async {
     try {
-      // Fetch currency rates
       try {
         currencyData = await ApiService.fetchCurrency().timeout(
           const Duration(seconds: 6),
         );
       } catch (_) {
-        // Fallback rates
         currencyData = Currency(
           success: true,
           base: "EUR",
@@ -61,16 +59,13 @@ class _HomePageState extends State<HomePage> {
         );
       }
 
-      // Detect user currency
       fromCurrency = await LocationService.getCurrencyFromLocation(
         currencyData!,
       ).timeout(const Duration(seconds: 4), onTimeout: () => "EUR");
 
-      // Ensure currencies exist
       if (!currencyData!.rates.containsKey(fromCurrency)) fromCurrency = "EUR";
       if (!currencyData!.rates.containsKey(toCurrency)) toCurrency = "USD";
 
-      // Start the location listener now that we have `currencyData` available.
       LocationService.startCurrencyListener(
         currencyData: currencyData!,
         onCurrencyChanged: (currency) {
@@ -115,9 +110,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    // Only stop the listener if the user has disabled automatic currency
-    // updates; otherwise keep it running so location changes update the
-    // selected currency even when navigating away (e.g. to a map view).
     if (!autoCurrencyEnabled) LocationService.stopCurrencyListener();
     super.dispose();
   }
@@ -129,7 +121,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Color(0xFF121217),
         body: Center(child: CircularProgressIndicator()),
       );
-    }
+    } // loading state
 
     return Scaffold(
       backgroundColor: const Color(0xFF121217),
@@ -337,7 +329,6 @@ class _HomePageState extends State<HomePage> {
         onPressed: onTap,
         child: Row(
           children: [
-            flagForCurrency(selected, size: 32),
             const SizedBox(width: 10),
             Text(
               selected,

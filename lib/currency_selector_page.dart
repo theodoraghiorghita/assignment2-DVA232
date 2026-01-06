@@ -131,7 +131,6 @@ class _CurrencySelectorPageState extends State<CurrencySelectorPage> {
                     ),
                     child: Row(
                       children: [
-                        flagForCurrency(currency, size: 32),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
