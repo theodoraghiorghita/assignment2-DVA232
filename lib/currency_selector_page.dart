@@ -1,4 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
 import 'package:flutter/material.dart';
 import '../models/currency.dart';
 import 'utils/currency_utils.dart';
@@ -131,7 +130,7 @@ class _CurrencySelectorPageState extends State<CurrencySelectorPage> {
                     ),
                     child: Row(
                       children: [
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Text(
                             '$currency (${currencyCodeToCountryName(currency)})',

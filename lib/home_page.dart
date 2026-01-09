@@ -20,10 +20,9 @@ class _HomePageState extends State<HomePage> {
   double amount = 1.0;
   double convertedAmount = 1.0;
 
-  bool autoCurrencyEnabled = true; // listens to location changes
+  bool autoCurrencyEnabled = true;
 
   double get unitRate {
-    // exchange rate computation
     if (currencyData == null || fromCurrency == null || toCurrency == null) {
       return 0.0;
     }
@@ -121,7 +120,10 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Color(0xFF121217),
         body: Center(child: CircularProgressIndicator()),
       );
-    } // loading state
+    }
+
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Scaffold(
       backgroundColor: const Color(0xFF121217),
@@ -164,158 +166,257 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
+          child: isLandscape ? _buildLandscape() : _buildPortrait(),
+        ),
+      ),
+    );
+  }
+
+  // ---------------- Portrait Layout (OLD DESIGN) ----------------
+  Widget _buildPortrait() {
+    return Column(
+      children: [
+        Expanded(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // FROM currency + amount
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: _buildCurrencyButton(
-                            selected: fromCurrency!,
-                            onTap: () async {
-                              final picked = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CurrencySelectorPage(
-                                    selectedCurrency: fromCurrency!,
-                                    currencyData: currencyData!,
-                                  ),
-                                ),
-                              );
-                              if (picked != null) {
-                                setState(() => fromCurrency = picked);
-                                _updateConversion();
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(flex: 2, child: _buildAmountField()),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // SWAP BUTTON
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1D3B57),
-                        borderRadius: BorderRadius.circular(100),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFF64B5F6,
-                            ).withValues(alpha: 0.18),
-                            blurRadius: 6,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.swap_vert,
-                          size: 34,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            final temp = fromCurrency;
-                            fromCurrency = toCurrency;
-                            toCurrency = temp;
-                          });
-                          _updateConversion();
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // TO currency + result
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: _buildCurrencyButton(
-                            selected: toCurrency!,
-                            onTap: () async {
-                              final picked = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CurrencySelectorPage(
-                                    selectedCurrency: toCurrency!,
-                                    currencyData: currencyData!,
-                                  ),
-                                ),
-                              );
-                              if (picked != null) {
-                                setState(() => toCurrency = picked);
-                                _updateConversion();
-                              }
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(flex: 2, child: _buildResultBox()),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => RatesPage(
-                                currencyData: currencyData!,
-                                fromCurrency:
-                                    fromCurrency!, // pass selected currency
-                              ),
+              // FROM currency + amount
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _buildCurrencyButton(
+                      selected: fromCurrency!,
+                      onTap: () async {
+                        final picked = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CurrencySelectorPage(
+                              selectedCurrency: fromCurrency!,
+                              currencyData: currencyData!,
                             ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2E5A86),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text(
-                          'View Exchange Rates',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                        );
+                        if (picked != null) {
+                          setState(() => fromCurrency = picked);
+                          _updateConversion();
+                        }
+                      },
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(flex: 2, child: _buildAmountField()),
+                ],
               ),
-              // Footer
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF141416),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF2E4A66)),
-                ),
-                child: Text(
-                  '1 $fromCurrency = ${unitRate.toStringAsFixed(2)} $toCurrency',
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
+              const SizedBox(height: 12),
+              // SWAP BUTTON
+              _buildSwapButton(),
+              const SizedBox(height: 12),
+              // TO currency + result
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _buildCurrencyButton(
+                      selected: toCurrency!,
+                      onTap: () async {
+                        final picked = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CurrencySelectorPage(
+                              selectedCurrency: toCurrency!,
+                              currencyData: currencyData!,
+                            ),
+                          ),
+                        );
+                        if (picked != null) {
+                          setState(() => toCurrency = picked);
+                          _updateConversion();
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(flex: 2, child: _buildResultBox()),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildRatesButton(),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildFooter(),
+      ],
+    );
+  }
+
+  // ---------------- Landscape Layout (NEW SIDE-BY-SIDE DESIGN) ----------------
+  Widget _buildLandscape() {
+    return Row(
+      children: [
+        // Left half: from/to currencies
+        Expanded(
+          flex: 1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // FROM currency + amount
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _buildCurrencyButton(
+                      selected: fromCurrency!,
+                      onTap: () async {
+                        final picked = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CurrencySelectorPage(
+                              selectedCurrency: fromCurrency!,
+                              currencyData: currencyData!,
+                            ),
+                          ),
+                        );
+                        if (picked != null) {
+                          setState(() => fromCurrency = picked);
+                          _updateConversion();
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(flex: 2, child: _buildAmountField()),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _buildSwapButton(),
+              const SizedBox(height: 12),
+              // TO currency + result
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _buildCurrencyButton(
+                      selected: toCurrency!,
+                      onTap: () async {
+                        final picked = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CurrencySelectorPage(
+                              selectedCurrency: toCurrency!,
+                              currencyData: currencyData!,
+                            ),
+                          ),
+                        );
+                        if (picked != null) {
+                          setState(() => toCurrency = picked);
+                          _updateConversion();
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(flex: 2, child: _buildResultBox()),
+                ],
               ),
             ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        // Right half: rates button + footer
+        Expanded(
+          flex: 1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildRatesButton(),
+              const SizedBox(height: 16),
+              _buildFooter(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ---------------- Shared Widgets ----------------
+  Widget _buildSwapButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1D3B57),
+        borderRadius: BorderRadius.circular(100),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF64B5F6).withOpacity(0.18),
+            blurRadius: 6,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.swap_vert, size: 34, color: Colors.white),
+        onPressed: () {
+          setState(() {
+            final temp = fromCurrency;
+            fromCurrency = toCurrency;
+            toCurrency = temp;
+          });
+          _updateConversion();
+        },
+      ),
+    );
+  }
+
+  Widget _buildRatesButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RatesPage(
+                currencyData: currencyData!,
+                fromCurrency: fromCurrency!,
+              ),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2E5A86),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+        child: const Text(
+          'View Exchange Rates',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
       ),
     );
   }
 
-  // -------------------------
+  Widget _buildFooter() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141416),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF2E4A66)),
+      ),
+      child: Text(
+        '1 $fromCurrency = ${unitRate.toStringAsFixed(2)} $toCurrency',
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+      ),
+    );
+  }
+
   Widget _buildCurrencyButton({
     required String selected,
     required VoidCallback onTap,
@@ -328,7 +429,7 @@ class _HomePageState extends State<HomePage> {
         border: Border.all(color: const Color(0xFF2E4A66)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF64B5F6).withValues(alpha: 0.18),
+            color: const Color(0xFF64B5F6).withOpacity(0.18),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -346,20 +447,22 @@ class _HomePageState extends State<HomePage> {
         onPressed: onTap,
         child: Row(
           children: [
-            const SizedBox(width: 10),
-            Text(
-              selected,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                selected,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold, // bigger font
+                ),
               ),
             ),
-            const Spacer(),
             const Icon(
               Icons.arrow_forward_ios,
               color: Colors.blueAccent,
               size: 16,
             ),
+            const SizedBox(width: 12),
           ],
         ),
       ),
