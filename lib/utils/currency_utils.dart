@@ -12,7 +12,6 @@ String currencyToCountryCode(String currency) {
 Widget flagForCurrency(String currency, {double size = 32}) {
   final code = currencyToCountryCode(currency).toLowerCase();
 
-  // Don't show a flag for currencies without a real country
   if (code == "unknown") {
     return SizedBox(width: size, height: size);
   }

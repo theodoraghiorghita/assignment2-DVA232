@@ -1,6 +1,3 @@
-// This file contains mappings between countries and currencies
-// Data generated from official Fixer API currency list
-
 const Map<String, String> countryToCurrency = {
   "AF": "AFN",
   "AL": "ALL",

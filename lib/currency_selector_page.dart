@@ -17,24 +17,20 @@ class CurrencySelectorPage extends StatefulWidget {
 }
 
 class _CurrencySelectorPageState extends State<CurrencySelectorPage> {
-  late String selectedCurrency;
   late List<String> allCurrencies;
-  List<String> filteredCurrencies = [];
+  late List<String> filteredCurrencies;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    selectedCurrency = widget.selectedCurrency;
     allCurrencies = widget.currencyData.rates.keys.toList()..sort();
     filteredCurrencies = List.from(allCurrencies);
-
     _searchController.addListener(_onSearchChanged);
   }
 
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
-
     setState(() {
       filteredCurrencies = allCurrencies.where((currency) {
         final countryName = currencyCodeToCountryName(currency).toLowerCase();
@@ -53,98 +49,89 @@ class _CurrencySelectorPageState extends State<CurrencySelectorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: const Color(0xFF121217),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0D0D0D),
+        backgroundColor: const Color(0xFF121217),
         elevation: 0,
+        scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFFBEE7FF)),
         centerTitle: true,
+        toolbarHeight: isLandscape ? 60 : 100,
         title: const Text(
           'Select Currency',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, selectedCurrency),
-            child: const Text(
-              'DONE',
-              style: TextStyle(
-                color: Color(0xFF3B6EFF),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
-          // Search bar
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: TextField(
-              controller: _searchController, // <-- Controller added
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: "Search currency or country",
-                hintStyle: const TextStyle(color: Colors.white54),
-                prefixIcon: const Icon(Icons.search, color: Colors.blueAccent),
-                filled: true,
-                fillColor: const Color(0xFF151515),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.blue.shade800),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.blue.shade800),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
+            child: SizedBox(
+              height: isLandscape ? 40 : 60,
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Search currency or country",
+                  hintStyle: const TextStyle(color: Colors.white54),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Colors.blueAccent,
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFF151515),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: Colors.blue.shade800),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF3B6EFF),
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 0,
+                  ),
                 ),
               ),
             ),
           ),
-          // List of filtered currencies
           Expanded(
             child: ListView.builder(
               itemCount: filteredCurrencies.length,
               itemBuilder: (context, index) {
                 final currency = filteredCurrencies[index];
-                final isSelected = currency == selectedCurrency;
-
                 return GestureDetector(
-                  onTap: () => setState(() => selectedCurrency = currency),
+                  onTap: () {
+                    Navigator.pop(context, currency);
+                  },
                   child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 8,
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 4,
                       horizontal: 12,
                     ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 16,
+                    ),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? Colors.blue.shade900.withValues(alpha: 0.25)
-                          : const Color(0xFF151515),
+                      color: const Color(0xFF151515),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Text(
-                            '$currency (${currencyCodeToCountryName(currency)})',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                        if (isSelected)
-                          const Icon(Icons.check, color: Color(0xFF3B6EFF)),
-                      ],
+                    child: Text(
+                      '$currency (${currencyCodeToCountryName(currency)})',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
                   ),
                 );
