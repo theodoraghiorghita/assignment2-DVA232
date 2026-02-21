@@ -8,7 +8,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:api_demo/main.dart';
+// The import below should reference the app's main file. In case the package URI
+// cannot be resolved (e.g. workspace contains multiple projects) a relative
+// path works just as well.
+import '../lib/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {

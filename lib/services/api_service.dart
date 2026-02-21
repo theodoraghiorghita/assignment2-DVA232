@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/currency.dart';
 
 class ApiService {
-  static const String apiKey = 'c898652d82183843dfc9b62a1d7a9356';
+  static const String apiKey = 'YOUR_API_KEY_HERE';
   static const String baseUrl = 'https://data.fixer.io/api/latest';
 
   static Future<Currency> fetchCurrency() async {
